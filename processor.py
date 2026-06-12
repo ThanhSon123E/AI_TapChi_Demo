@@ -145,22 +145,45 @@ COL_W    = (USABLE_W - COL_GAP) / 2
 # Được gọi tự động một lần khi import module.
 # ═══════════════════════════════════════════════════════════════
 def _register_fonts():
-    WIN = "C:/Windows/Fonts"
-    LIN = "/usr/share/fonts/truetype"
-    defs = {
-        "MgSR":  [f"{WIN}/times.ttf",   f"{LIN}/liberation/LiberationSerif-Regular.ttf",    f"{LIN}/dejavu/DejaVuSerif.ttf"],
-        "MgSB":  [f"{WIN}/timesbd.ttf", f"{LIN}/liberation/LiberationSerif-Bold.ttf",       f"{LIN}/dejavu/DejaVuSerif-Bold.ttf"],
-        "MgSI":  [f"{WIN}/timesi.ttf",  f"{LIN}/liberation/LiberationSerif-Italic.ttf",     f"{LIN}/dejavu/DejaVuSerif-Italic.ttf"],
-        "MgSBI": [f"{WIN}/timesbi.ttf", f"{LIN}/liberation/LiberationSerif-BoldItalic.ttf", f"{LIN}/dejavu/DejaVuSerif-BoldItalic.ttf"],
-        "MgSS":  [f"{WIN}/arial.ttf",   f"{LIN}/liberation/LiberationSans-Regular.ttf",     f"{LIN}/dejavu/DejaVuSans.ttf"],
-        "MgSSB": [f"{WIN}/arialbd.ttf", f"{LIN}/liberation/LiberationSans-Bold.ttf",        f"{LIN}/dejavu/DejaVuSans-Bold.ttf"],
-        "MgSSI": [f"{WIN}/ariali.ttf",  f"{LIN}/liberation/LiberationSans-Italic.ttf",      f"{LIN}/dejavu/DejaVuSans-Oblique.ttf"],
+    # Lấy đường dẫn tuyệt đối đến thư mục 'fonts' Sơn đã up lên GitHub
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    FONTS_DIR = os.path.join(BASE_DIR, "fonts")
+    
+    # Bản đồ map khớp 100% với tên file font Noto thực tế của Sơn
+    font_mapping = {
+        "MgSR":   "NotoSerif-Regular.ttf",
+        "MgSB":   "NotoSerif-Bold.ttf",
+        "MgSI":   "NotoSerif-Italic.ttf",
+        "MgSBI":  "NotoSerif-BoldItalic.ttf",
+        "MgSS":   "NotoSans-Regular.ttf",
+        "MgSSB":  "NotoSans-Bold.ttf",
+        "MgSSI":  "NotoSans-Italic.ttf",
     }
-    for name, paths in defs.items():
-        for p in paths:
+    
+    for font_name, file_name in font_mapping.items():
+        custom_p = os.path.join(FONTS_DIR, file_name)
+        
+        # Ưu tiên nạp font từ thư mục 'fonts' trong dự án của Sơn
+        if os.path.exists(custom_p):
+            try:
+                pdfmetrics.registerFont(TTFont(font_name, custom_p))
+                print(f"[FONT OK] Đã nạp font: {file_name}")
+                continue
+            except Exception as e:
+                print(f"[FONT ERROR] Lỗi nạp font {file_name}: {e}")
+                
+        # Dự phòng nếu chạy dưới máy local (XAMPP)
+        WIN = "C:/Windows/Fonts"
+        LIN = "/usr/share/fonts/truetype"
+        fallback_paths = [
+            os.path.join(WIN, file_name),
+            os.path.join(LIN, "liberation", file_name.replace("times", "LiberationSerif").replace("arial", "LiberationSans")),
+            os.path.join(LIN, "dejavu", file_name.replace("times.ttf", "DejaVuSerif.ttf").replace("arial.ttf", "DejaVuSans.ttf"))
+        ]
+        for p in fallback_paths:
             if os.path.exists(p):
                 try:
-                    pdfmetrics.registerFont(TTFont(name, p))
+                    pdfmetrics.registerFont(TTFont(font_name, p))
                     break
                 except Exception:
                     pass
