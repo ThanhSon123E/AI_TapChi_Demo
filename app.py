@@ -332,6 +332,7 @@ def login_google():
     # Tự động dùng https khi qua ngrok, http khi localhost
     if (request.host.endswith(".ngrok-free.dev") or 
         request.host.endswith(".ngrok.io") or 
+        request.host.endswith(".vercel.app") or  
         request.host.endswith(".trycloudflare.com")):
         scheme = "https"
     else:
