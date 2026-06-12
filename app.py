@@ -83,6 +83,11 @@ _GOOGLE_CLIENT_ID     = os.getenv("GOOGLE_CLIENT_ID", "")
 _GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET", "")
 _GOOGLE_ENABLED       = bool(_GOOGLE_CLIENT_ID and _GOOGLE_CLIENT_SECRET)
 
+if not _GOOGLE_ENABLED:
+    print("[WARN] Google OAuth chua cau hinh")
+else:
+    os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
+
 
 
 db            = SQLAlchemy(app)
