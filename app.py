@@ -44,7 +44,10 @@ upload_folder = "/tmp" if IS_VERCEL else "static/outputs"
 
 # Construct SQLALCHEMY_DATABASE_URI dynamically if separate env vars are provided
 db_uri = os.getenv("DATABASE_URL") or os.getenv("SQLALCHEMY_DATABASE_URI")
-if not db_uri:
+if db_uri:
+    if db_uri.startswith("mysql://"):
+        db_uri = db_uri.replace("mysql://", "mysql+pymysql://", 1)
+else:
     db_user = os.getenv("DB_USER")
     db_pwd = os.getenv("DB_PASSWORD")
     db_host = os.getenv("DB_HOST")
@@ -87,7 +90,6 @@ if not _GOOGLE_ENABLED:
     print("[WARN] Google OAuth chua cau hinh")
 else:
     os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
-
 
 
 db            = SQLAlchemy(app)
@@ -333,8 +335,8 @@ def login_google():
     # Tự động dùng https khi qua ngrok, http khi localhost
     if (request.host.endswith(".ngrok-free.dev") or 
         request.host.endswith(".ngrok.io") or 
-        request.host.endswith(".vercel.app") or  
-        request.host.endswith(".trycloudflare.com")):
+        request.host.endswith(".trycloudflare.com") or
+        request.host.endswith(".vercel.app")):
         scheme = "https"
     else:
         scheme = "http"
